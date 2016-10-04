@@ -1,6 +1,7 @@
 'use strict';
 const Path = require('path');
 const Clean = require('clean-webpack-plugin');
+const Extract = require('extract-text-webpack-plugin');
 const Html = require('html-webpack-plugin');
 const Stats = require('webpack-stats-plugin').StatsWriterPlugin;
 const Webpack = require('webpack');
@@ -9,7 +10,29 @@ if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = 'development';
 }
 
-const outputPath = Path.join(__dirname, 'dist');
+const env = process.env.NODE_ENV;
+
+const outputPath = Path.join(__dirname, env);
+const extractCSS = new Extract({filename: 'styles-[contenthash].css', allChunks: true});
+
+const getCSSLoaders = (env) => {
+  if (env === 'development') {
+    return [
+      { loader: 'style-loader' },
+      { loader: 'css-loader',
+        options: {modules: true, localIdentName: '[local]__[hash:base64:5]'},
+      },
+    ];
+  }
+
+  return extractCSS.extract([
+    { loader: 'css-loader',
+      options: {modules: true, localIdentName: '[hash:base64:5]'},
+    },
+  ]);
+
+};
+
 module.exports = {
   entry: Path.join(__dirname, 'app', 'index.js'),
   output: {
@@ -33,12 +56,7 @@ module.exports = {
         ],
       },
       { test: /\.css$/,
-        use: [
-          { loader: 'style-loader' },
-          { loader: 'css-loader',
-            options: {modules: true, localIdentName: '[hash:base64:5]'},
-          },
-        ],
+        use: getCSSLoaders(env),
       },
     ],
   },
@@ -52,3 +70,7 @@ module.exports = {
     }),
   ],
 };
+
+if (env !== 'development') {
+  module.exports.plugins.push(extractCSS);
+}
