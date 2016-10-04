@@ -1,0 +1,16 @@
+
+.base {
+  margin: 1.5em;
+  padding: 0;
+}
+
+.header {
+  color: red;
+  font-weight: 700;
+}
+
+.paragraph {
+  color: #444;
+  line-height: 1.4;
+}
+
