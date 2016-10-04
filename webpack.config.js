@@ -30,8 +30,16 @@ const getCSSLoaders = (env) => {
       options: {modules: true, localIdentName: '[hash:base64:5]'},
     },
   ]);
-
 };
+
+const getPluginsForEnv = (env) => {
+  if (env === 'production') {
+    return [extractCSS];
+  }
+
+  return [];
+}
+
 
 module.exports = {
   entry: Path.join(__dirname, 'app', 'index.js'),
@@ -68,9 +76,12 @@ module.exports = {
       template: 'index.template',
       inject: 'body',
     }),
-  ],
+    new Webpack.LoaderOptionsPlugin({
+      debug: true,
+      options: {
+        context: Path.join(__dirname, 'app')
+      },
+    })
+  ].concat(getPluginsForEnv(env)),
 };
 
-if (env !== 'development') {
-  module.exports.plugins.push(extractCSS);
-}
