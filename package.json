@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack",
-    "prod": "NODE_ENV=production webpack"
+    "dev": "webpack || true",
+    "prod": "NODE_ENV=production webpack || true"
   },
   "author": "Dustan Kasten <dustan.kasten@gmail.com>",
   "license": "MIT",
