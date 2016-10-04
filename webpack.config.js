@@ -27,7 +27,8 @@ const getCSSLoaders = (env) => {
 
   return extractCSS.extract([
     { loader: 'css-loader',
-      options: {modules: true, localIdentName: '[hash:base64:5]'},
+      // this must be `query`. if it is `option` the imported classNames are all `undefined`.
+      query: {modules: true, localIdentName: '[hash:base64:5]'},
     },
   ]);
 };
@@ -64,7 +65,7 @@ module.exports = {
         ],
       },
       { test: /\.css$/,
-        use: getCSSLoaders(env),
+        loader: getCSSLoaders(env),
       },
     ],
   },
