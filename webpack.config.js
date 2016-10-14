@@ -1,5 +1,6 @@
 'use strict';
 const Path = require('path');
+const AutoPrefixer = require('autoprefixer-stylus');
 const Clean = require('clean-webpack-plugin');
 const Extract = require('extract-text-webpack-plugin');
 const Html = require('html-webpack-plugin');
@@ -22,6 +23,7 @@ const getCSSLoaders = (env) => {
       { loader: 'css-loader',
         options: {modules: true, localIdentName: '[local]__[hash:base64:5]'},
       },
+      { loader: 'stylus-loader' },
     ];
   }
 
@@ -30,15 +32,25 @@ const getCSSLoaders = (env) => {
       // this must be `query`. if it is `option` the imported classNames are all `undefined`.
       query: {modules: true, localIdentName: '[hash:base64:5]'},
     },
+    { loader: 'stylus-loader' },
   ]);
 };
 
 const getPluginsForEnv = (env) => {
+  const autoprefixer = new Webpack.LoaderOptionsPlugin({
+    test: /\.css/,
+    options: {
+      stylus: {
+        use: [AutoPrefixer({browsers: 'last 2 versions', hideWarnings: true})]
+      }
+    }
+  });
+
   if (env === 'production') {
-    return [extractCSS];
+    return [extractCSS, autoprefixer];
   }
 
-  return [];
+  return [autoprefixer];
 }
 
 
