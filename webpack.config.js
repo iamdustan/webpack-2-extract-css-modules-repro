@@ -1,6 +1,6 @@
 'use strict';
 const Path = require('path');
-const AutoPrefixer = require('autoprefixer-stylus');
+const AutoPrefixer = require('autoprefixer');
 const Clean = require('clean-webpack-plugin');
 const Extract = require('extract-text-webpack-plugin');
 const Html = require('html-webpack-plugin');
@@ -19,10 +19,15 @@ const extractCSS = new Extract({filename: 'styles-[contenthash].css', allChunks:
 const getCSSLoaders = (env) => {
   if (env === 'development') {
     return [
-      { loader: 'style-loader' },
+      'style-loader',
       { loader: 'css-loader',
-        options: {modules: true, localIdentName: '[local]__[hash:base64:5]'},
+        options: {
+          modules: true,
+          localIdentName: '[local]__[hash:base64:5]',
+          importLoaders: 1
+        },
       },
+      { loader: 'postcss-loader' },
       { loader: 'stylus-loader' },
     ];
   }
@@ -30,27 +35,35 @@ const getCSSLoaders = (env) => {
   return extractCSS.extract([
     { loader: 'css-loader',
       // this must be `query`. if it is `option` the imported classNames are all `undefined`.
-      query: {modules: true, localIdentName: '[hash:base64:5]'},
+      query: {
+        modules: true,
+        localIdentName: '[hash:base64:5]',
+        importLoaders: 1
+      },
     },
+    { loader: 'postcss-loader' },
     { loader: 'stylus-loader' },
   ]);
 };
 
 const getPluginsForEnv = (env) => {
-  const autoprefixer = new Webpack.LoaderOptionsPlugin({
-    test: /\.css/,
+  const autoprefixer = AutoPrefixer({browsers: ['last 2 versions', 'ie >= 9']})
+  const PostCSS = new Webpack.LoaderOptionsPlugin({
+    test: /\.css$/,
     options: {
-      stylus: {
-        use: [AutoPrefixer({browsers: 'last 2 versions', hideWarnings: true})]
+      postcss: {
+        plugins() {
+          return [autoprefixer];
+        }
       }
     }
   });
 
   if (env === 'production') {
-    return [extractCSS, autoprefixer];
+    return [extractCSS];
   }
 
-  return [autoprefixer];
+  return [PostCSS];
 }
 
 
@@ -77,7 +90,7 @@ module.exports = {
         ],
       },
       { test: /\.css$/,
-        loader: getCSSLoaders(env),
+        use: getCSSLoaders(env),
       },
     ],
   },
